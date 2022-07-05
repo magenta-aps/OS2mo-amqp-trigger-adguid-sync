@@ -17,6 +17,11 @@ pydantic = "^1.9.0"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
 fastramqpi = "^0.0.0"
 fastapi = "^0.78.0"
+gql = "^3.3.0"
+more-itertools = "^8.13.0"
+strawberry-graphql = "^0.116.4"
+raclients = "^1.2.5"
+rautils = "^1.0.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
