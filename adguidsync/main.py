@@ -18,8 +18,10 @@ from fastapi import APIRouter
 from fastramqpi.main import FastRAMQPI
 from fastramqpi.context import Context
 
+from .config import Settings
 from .calculate import ensure_adguid_itsystem
 from .dataloaders import seed_dataloaders
+from .ldap import ad_connection
 
 
 fastapi_router = APIRouter()
@@ -36,6 +38,7 @@ def gen_ensure_adguid_itsystem(context: Context) -> Callable[[UUID], bool]:
     """
     return partial(
         ensure_adguid_itsystem,
+        settings=context["user_context"]["settings"],
         dataloaders=context["user_context"]["dataloaders"],
         model_client=context["model_client"],
     )
@@ -75,7 +78,14 @@ def create_app(**kwargs: Any) -> FastAPI:
     Returns:
         None
     """
-    fastramqpi = FastRAMQPI(application_name="adguidsync", **kwargs)
+    settings = Settings(**kwargs)
+    print(settings.json(indent=2))
+    fastramqpi = FastRAMQPI(application_name="adguidsync", settings=settings.fastramqpi)
+    fastramqpi.add_context(settings=settings)
+
+    fastramqpi.add_lifespan_manager(
+        partial(ad_connection, fastramqpi)(), 1500
+    )
     fastramqpi.add_lifespan_manager(
         partial(seed_dataloaders, fastramqpi)(), 2000
     )
